@@ -1,9 +1,5 @@
 //  (Modified) Nilheim Mechatronics Simplified Eye Mechanism Code
 
-//  X-axis joystick pin: A1
-//  Y-axis joystick pin: A0
-//  Trim potentiometer pin: A2
-//  Button pin: 2
 #include <Arduino.h>
 #include "basic-eyemech.h"
 
@@ -14,6 +10,7 @@
 #define PIN_JOYSTICK_Y A0
 #define PIN_EYELID_TRIM A2
 #define PIN_BLINK_BUTTON 2
+// Also, SCL and SDA are used by pwm
 
 #define SERVO_EYE_X 0
 #define SERVO_EYE_Y 1
