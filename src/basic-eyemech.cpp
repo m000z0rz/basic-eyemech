@@ -30,16 +30,16 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 int xval;
 int yval;
 
-int lexpulse;
-int rexpulse;
+int eyeXPulse;
+//int rexpulse;
 
-int leypulse;
-int reypulse;
+int eyeYPulse;
+//int reypulse;
 
-int uplidpulse;
-int lolidpulse;
-int altuplidpulse;
-int altlolidpulse;
+int lidUpperLeftPulse;
+int lidLowerLeftPulse;
+int lidUpperRightPulse;
+int lidLowerRightPulse;
 
 int trimval;
 
@@ -78,29 +78,30 @@ void setServoPulse(uint8_t n, double pulse) {
 void loop() {
 
   xval = analogRead(PIN_JOYSTICK_X);
-  lexpulse = map(xval, 0, 1023, 220, 440);
-  rexpulse = lexpulse;
+  eyeXPulse = map(xval, 0, 1023, 220, 440);
+  //rexpulse = lexpulse;
 
   switchval = digitalRead(PIN_BLINK_BUTTON);
 
   yval = analogRead(PIN_JOYSTICK_Y);
-  leypulse = map(yval, 0, 1023, 250, 500);
-  reypulse = map(yval, 0, 1023, 400, 280);
+  eyeYPulse = map(yval, 0, 1023, 250, 500);
+  //reypulse = map(yval, 0, 1023, 400, 280);
 
   trimval = analogRead(PIN_EYELID_TRIM);
   trimval = map(trimval, 320, 580, -40, 40);
-  uplidpulse = map(yval, 0, 1023, 400, 280);
-  uplidpulse -= (trimval - 40);
-  uplidpulse = constrain(uplidpulse, 280, 400);
-  altuplidpulse = 680 - uplidpulse;
+  lidUpperLeftPulse = map(yval, 0, 1023, 400, 280);
+  lidUpperLeftPulse -= (trimval - 40);
+  lidUpperLeftPulse = constrain(lidUpperLeftPulse, 280, 400);
+  lidUpperRightPulse = 680 - lidUpperLeftPulse;
 
-  lolidpulse = map(yval, 0, 1023, 410, 280);
-  lolidpulse += (trimval / 2);
-  lolidpulse = constrain(lolidpulse, 280, 400);
-  altlolidpulse = 680 - lolidpulse;
+  lidLowerLeftPulse = map(yval, 0, 1023, 410, 280);
+  lidLowerLeftPulse += (trimval / 2);
+  lidLowerLeftPulse = constrain(lidLowerLeftPulse, 280, 400);
+  lidLowerRightPulse = 680 - lidLowerLeftPulse;
 
-  pwm.setPWM(SERVO_EYE_X, 0, lexpulse);
-  pwm.setPWM(SERVO_EYE_Y, 0, leypulse);
+  // Set servo values
+  pwm.setPWM(SERVO_EYE_X, 0, eyeXPulse);
+  pwm.setPWM(SERVO_EYE_Y, 0, eyeYPulse);
 
   if (switchval == HIGH) {
     pwm.setPWM(SERVO_LID_UPPER_LEFT, 0, 400);
@@ -108,10 +109,10 @@ void loop() {
     pwm.setPWM(SERVO_LID_UPPER_RIGHT, 0, 240);
     pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, 400);
   } else if (switchval == LOW) {
-    pwm.setPWM(SERVO_LID_UPPER_LEFT, 0, uplidpulse);
-    pwm.setPWM(SERVO_LID_LOWER_LEFT, 0, lolidpulse);
-    pwm.setPWM(SERVO_LID_UPPER_RIGHT, 0, altuplidpulse);
-    pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, altlolidpulse);
+    pwm.setPWM(SERVO_LID_UPPER_LEFT, 0, lidUpperLeftPulse);
+    pwm.setPWM(SERVO_LID_LOWER_LEFT, 0, lidLowerLeftPulse);
+    pwm.setPWM(SERVO_LID_UPPER_RIGHT, 0, lidUpperRightPulse);
+    pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, lidLowerRightPulse);
   }
 
   Serial.println(trimval);
