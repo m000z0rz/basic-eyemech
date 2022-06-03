@@ -4,8 +4,9 @@
 //  Y-axis joystick pin: A0
 //  Trim potentiometer pin: A2
 //  Button pin: 2
+#include <Arduino.h>
+#include "basic-eyemech.h"
 
- 
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
@@ -43,9 +44,9 @@ void setup() {
   Serial.println("8 channel Servo test!");
   pinMode(analogInPin, INPUT);
   pinMode(2, INPUT);
- 
+
   pwm.begin();
-  
+
   pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
 
   delay(10);
@@ -55,12 +56,12 @@ void setup() {
 // e.g. setServoPulse(0, 0.001) is a ~1 millisecond pulse width. its not precise!
 void setServoPulse(uint8_t n, double pulse) {
   double pulselength;
-  
+
   pulselength = 1000000;   // 1,000,000 us per second
   pulselength /= 60;   // 60 Hz
-  Serial.print(pulselength); Serial.println(" us per period"); 
+  Serial.print(pulselength); Serial.println(" us per period");
   pulselength /= 4096;  // 12 bits of resolution
-  Serial.print(pulselength); Serial.println(" us per bit"); 
+  Serial.print(pulselength); Serial.println(" us per bit");
   pulse *= 1000000;  // convert to us
   pulse /= pulselength;
   Serial.println(pulse);
@@ -74,8 +75,8 @@ void loop() {
     rexpulse = lexpulse;
 
     switchval = digitalRead(2);
-    
-    
+
+
   yval = analogRead(A0);
     leypulse = map(yval, 0,1023, 250, 500);
     reypulse = map(yval, 0,1023, 400, 280);
@@ -89,10 +90,10 @@ void loop() {
 
      lolidpulse = map(yval, 0, 1023, 410, 280);
        lolidpulse += (trimval/2);
-         lolidpulse = constrain(lolidpulse, 280, 400);      
+         lolidpulse = constrain(lolidpulse, 280, 400);
      altlolidpulse = 680-lolidpulse;
- 
-    
+
+
       pwm.setPWM(0, 0, lexpulse);
       pwm.setPWM(1, 0, leypulse);
 
@@ -113,7 +114,7 @@ void loop() {
 
 
           Serial.println(trimval);
-      
+
   delay(5);
 
 }
