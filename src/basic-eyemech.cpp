@@ -43,8 +43,6 @@ int lidLowerRightPulse;
 
 int trimval;
 
-int sensorValue = 0;
-int outputValue = 0;
 int switchval = 0;
 
 void setup() {
