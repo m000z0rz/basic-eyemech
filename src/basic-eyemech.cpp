@@ -6,6 +6,8 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
+#include "input.h"
+#include "input_eyemech_controller.cpp"
 #define PIN_JOYSTICK_X A1
 #define PIN_JOYSTICK_Y A0
 #define PIN_EYELID_TRIM A2
@@ -22,34 +24,17 @@
 #define SERVOMIN  140 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  520 // this is the 'maximum' pulse length count (out of 4096)
 
+EyemechControllerInput input = EyemechControllerInput(PIN_JOYSTICK_X, PIN_JOYSTICK_Y, PIN_BLINK_BUTTON, PIN_EYELID_TRIM);
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
-int xval;
-int yval;
-
-int eyeXPulse;
-//int rexpulse;
-
-int eyeYPulse;
-//int reypulse;
-
-int lidUpperLeftPulse;
-int lidLowerLeftPulse;
-int lidUpperRightPulse;
-int lidLowerRightPulse;
-
-int trimval;
-
-int switchval = 0;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("8 channel Servo test!");
-  pinMode(PIN_JOYSTICK_Y, INPUT);
-  pinMode(2, INPUT);
 
   pwm.begin();
   pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
+	input.init();
 
   delay(10);
 }
@@ -71,43 +56,23 @@ void setServoPulse(uint8_t n, double pulse) {
 }
 
 void loop() {
+	input.update();
 
-  xval = analogRead(PIN_JOYSTICK_X);
-  eyeXPulse = map(xval, 0, 1023, 220, 440);
-  //rexpulse = lexpulse;
-
-  switchval = digitalRead(PIN_BLINK_BUTTON);
-
-  yval = analogRead(PIN_JOYSTICK_Y);
-  eyeYPulse = map(yval, 0, 1023, 250, 500);
-  //reypulse = map(yval, 0, 1023, 400, 280);
-
-  trimval = analogRead(PIN_EYELID_TRIM);
-  trimval = map(trimval, 320, 580, -40, 40);
-  lidUpperLeftPulse = map(yval, 0, 1023, 400, 280);
-  lidUpperLeftPulse -= (trimval - 40);
-  lidUpperLeftPulse = constrain(lidUpperLeftPulse, 280, 400);
-  lidUpperRightPulse = 680 - lidUpperLeftPulse;
-
-  lidLowerLeftPulse = map(yval, 0, 1023, 410, 280);
-  lidLowerLeftPulse += (trimval / 2);
-  lidLowerLeftPulse = constrain(lidLowerLeftPulse, 280, 400);
-  lidLowerRightPulse = 680 - lidLowerLeftPulse;
 
   // Set servo values
-  pwm.setPWM(SERVO_EYE_X, 0, eyeXPulse);
-  pwm.setPWM(SERVO_EYE_Y, 0, eyeYPulse);
+  pwm.setPWM(SERVO_EYE_X, 0, input.getEyeXPulse());
+  pwm.setPWM(SERVO_EYE_Y, 0, input.getEyeYPulse());
 
-  if (switchval == HIGH) {
+  if (input.getBlinking() ) {
     pwm.setPWM(SERVO_LID_UPPER_LEFT, 0, 400);
     pwm.setPWM(SERVO_LID_LOWER_LEFT, 0, 240);
     pwm.setPWM(SERVO_LID_UPPER_RIGHT, 0, 240);
     pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, 400);
-  } else if (switchval == LOW) {
-    pwm.setPWM(SERVO_LID_UPPER_LEFT, 0, lidUpperLeftPulse);
-    pwm.setPWM(SERVO_LID_LOWER_LEFT, 0, lidLowerLeftPulse);
-    pwm.setPWM(SERVO_LID_UPPER_RIGHT, 0, lidUpperRightPulse);
-    pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, lidLowerRightPulse);
+  } else {
+    pwm.setPWM(SERVO_LID_UPPER_LEFT, 0, input.getLidUpperLeftPulse());
+    pwm.setPWM(SERVO_LID_LOWER_LEFT, 0, input.getLidLowerLeftPulse());
+    pwm.setPWM(SERVO_LID_UPPER_RIGHT, 0, input.getLidUpperRightPulse());
+    pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, input.getLidLowerRightPulse());
   }
 
   Serial.println(trimval);
