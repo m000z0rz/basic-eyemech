@@ -71,8 +71,7 @@ void setServoPulse(uint8_t n, double pulse) {
 void loop() {
 	input.update();
 
-
-  // Set servo values
+	// Set servo values
   pwm.setPWM(SERVO_EYE_X, 0, input.getEyeXPulse());
   pwm.setPWM(SERVO_EYE_Y, 0, input.getEyeYPulse());
 
