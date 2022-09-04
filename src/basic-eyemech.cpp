@@ -7,11 +7,27 @@
 #include <Adafruit_PWMServoDriver.h>
 
 #include "input.h"
-#include "input_eyemech_controller.cpp"
+
+//#define INPUT_METHOD_EYEMECHCONTROLLER 1;
+#define INPUT_METHOD_WIINUNCHUCK 1;
+
+#ifdef INPUT_METHOD_EYEMECHCONTROLLER
+#include "input_eyemech_controller.h"
+
 #define PIN_JOYSTICK_X A1
 #define PIN_JOYSTICK_Y A0
 #define PIN_EYELID_TRIM A2
-#define PIN_BLINK_BUTTON 2
+#define PIN_BLINK_BUTTON 4
+
+EyemechControllerInput input = EyemechControllerInput(PIN_JOYSTICK_X, PIN_JOYSTICK_Y, PIN_BLINK_BUTTON, PIN_EYELID_TRIM);
+#endif
+
+#ifdef INPUT_METHOD_WIINUNCHUCK
+#include "input_wii_nunchuck.h"
+
+WiiNunchuckInput input = WiiNunchuckInput();
+#endif
+
 // Also, SCL and SDA are used by pwm
 
 #define SERVO_EYE_X 0
@@ -24,9 +40,7 @@
 #define SERVOMIN  140 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  520 // this is the 'maximum' pulse length count (out of 4096)
 
-EyemechControllerInput input = EyemechControllerInput(PIN_JOYSTICK_X, PIN_JOYSTICK_Y, PIN_BLINK_BUTTON, PIN_EYELID_TRIM);
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
-
 
 void setup() {
   Serial.begin(9600);
@@ -36,7 +50,6 @@ void setup() {
   pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
 	input.init();
 
-  delay(10);
 }
 
 // you can use this function if you'd like to set the pulse length in seconds
