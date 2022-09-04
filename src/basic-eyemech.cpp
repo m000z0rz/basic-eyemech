@@ -87,6 +87,5 @@ void loop() {
     pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, input.getLidLowerRightPulse());
   }
 
-  Serial.println(trimval);
   delay(5);
 }
