@@ -44,7 +44,6 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("8 channel Servo test!");
 
   pwm.begin();
   pwm.setPWMFreq(50);  // Analog servos run at ~60 Hz updates // TODO: should be 50hz akshually
