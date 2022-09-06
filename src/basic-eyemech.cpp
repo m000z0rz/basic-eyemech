@@ -37,8 +37,8 @@ WiiNunchuckInput input = WiiNunchuckInput();
 #define SERVO_LID_UPPER_RIGHT 4
 #define SERVO_LID_LOWER_RIGHT 5
 
-#define SERVOMIN  140 // this is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  520 // this is the 'maximum' pulse length count (out of 4096)
+#define SERVOMIN  205 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX  410 // this is the 'maximum' pulse length count (out of 4096)
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
@@ -47,7 +47,7 @@ void setup() {
   Serial.println("8 channel Servo test!");
 
   pwm.begin();
-  pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
+  pwm.setPWMFreq(50);  // Analog servos run at ~60 Hz updates // TODO: should be 50hz akshually
 	input.init();
 
 }
