@@ -7,6 +7,7 @@
 #include <Adafruit_PWMServoDriver.h>
 
 #include "input.h"
+#include "animation.h"
 
 //#define INPUT_METHOD_EYEMECHCONTROLLER 1;
 #define INPUT_METHOD_WIINUNCHUCK 1;
@@ -28,6 +29,9 @@ EyemechControllerInput input = EyemechControllerInput(PIN_JOYSTICK_X, PIN_JOYSTI
 WiiNunchuckInput input = WiiNunchuckInput();
 #endif
 
+#define PIN_MODE_SWITCH 10
+
+AnimationInput animator = AnimationInput();
 // Also, SCL and SDA are used by pwm
 
 #define SERVO_EYE_X 0
@@ -40,33 +44,62 @@ WiiNunchuckInput input = WiiNunchuckInput();
 #define SERVOMIN  205 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  410 // this is the 'maximum' pulse length count (out of 4096)
 
+
+enum InputMode {
+	InputMode_Controller,
+	InputMode_Animation
+};
+
+InputMode mode = InputMode_Controller;
+
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 void setup() {
   Serial.begin(9600);
 
+	randomSeed(analogRead(0));
+
   pwm.begin();
   pwm.setPWMFreq(50);  // Analog servos run at ~60 Hz updates // TODO: should be 50hz akshually
 	input.init();
+
+	pinMode(PIN_MODE_SWITCH, INPUT);
 }
 
 void loop() {
-	input.update();
+  InputMode prevMode = mode;
+	mode = digitalRead(PIN_MODE_SWITCH) ? InputMode_Animation : InputMode_Controller;
+
+	if (mode == InputMode_Animation && mode != prevMode) {
+		animator.init();
+	}
+
+	EyemechInput *source;
+	switch (mode) {
+	case InputMode_Animation:
+		source = &animator;
+		break;
+	case InputMode_Controller:
+		source = &input;
+		break;
+	}
+
+	source->update();
 
 	// Set servo values
-  pwm.setPWM(SERVO_EYE_X, 0, input.getEyeXPulse());
-  pwm.setPWM(SERVO_EYE_Y, 0, input.getEyeYPulse());
+  pwm.setPWM(SERVO_EYE_X, 0, source->getEyeXPulse());
+  pwm.setPWM(SERVO_EYE_Y, 0, source->getEyeYPulse());
 
-  if (input.getBlinking() ) {
-    pwm.setPWM(SERVO_LID_UPPER_LEFT, 0, 400);
-    pwm.setPWM(SERVO_LID_LOWER_LEFT, 0, 240);
-    pwm.setPWM(SERVO_LID_UPPER_RIGHT, 0, 240);
-    pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, 400);
+  if (source->getBlinking() ) {
+		pwm.setPWM(SERVO_LID_UPPER_LEFT, 0, 240);
+    pwm.setPWM(SERVO_LID_LOWER_LEFT, 0, 400);
+    pwm.setPWM(SERVO_LID_UPPER_RIGHT, 0, 400);
+    pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, 240);
   } else {
-    pwm.setPWM(SERVO_LID_UPPER_LEFT, 0, input.getLidUpperLeftPulse());
-    pwm.setPWM(SERVO_LID_LOWER_LEFT, 0, input.getLidLowerLeftPulse());
-    pwm.setPWM(SERVO_LID_UPPER_RIGHT, 0, input.getLidUpperRightPulse());
-    pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, input.getLidLowerRightPulse());
+		pwm.setPWM(SERVO_LID_UPPER_LEFT, 0, source->getLidUpperLeftPulse());
+    pwm.setPWM(SERVO_LID_LOWER_LEFT, 0, source->getLidLowerLeftPulse());
+    pwm.setPWM(SERVO_LID_UPPER_RIGHT, 0, source->getLidUpperRightPulse());
+    pwm.setPWM(SERVO_LID_LOWER_RIGHT, 0, source->getLidLowerRightPulse());
   }
 
   delay(5);
